@@ -1,0 +1,11 @@
+build/
+dist/
+
+eggs/
+.eggs/
+*.egg-info/
+
+*.pyc
+
+env/
+venv/

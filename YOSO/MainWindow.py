@@ -1,5 +1,6 @@
 from os import makedirs
 from os.path import basename
+from os.path import splitext
 import errno
 
 from PyQt5.QtCore import QDir, QDirIterator, QItemSelectionModel, Qt
@@ -20,6 +21,7 @@ class MainWindow(QMainWindow):
     _image_spinner = None
     _next_image_action = None
     _prev_image_action = None
+    _is_yolo_name = None
     _progress_bar = None
     _top_images_dir = None
     _top_labels_dir = None
@@ -97,7 +99,11 @@ class MainWindow(QMainWindow):
         self._next_image_action.setEnabled(i < self._image_spinner.maximum())
         if 1 <= i <= self._image_spinner.maximum():
             image_path = self._current_images[i - 1]
-            label_path = image_path.replace(self._top_images_dir, self._top_labels_dir) + '.txt'
+            filename = image_path.replace(self._top_images_dir, self._top_labels_dir)
+            if self._is_yolo_name.isChecked():
+                filename = splitext(filename)[0]
+
+            label_path = filename + '.txt'
             self._workspace.loadImage(image_path, label_path)
 
 
@@ -138,11 +144,20 @@ class MainWindow(QMainWindow):
         self._next_image_action.setStatusTip('Show next image')
         self._next_image_action.triggered.connect(self.nextImage)
 
+        self._is_yolo_name = QAction('Use Yolo naming', self)
+        self._is_yolo_name.setToolTip('This option will load/save without image extension. E.g: img_1920.png borders '
+                                      'will be save as img_1920.txt')
+        self._is_yolo_name.setCheckable(True)
+
         menubar = self.menuBar()
         menubar.addAction(open_action)
         menubar.addSeparator()
         menubar.addAction(self._prev_image_action)
         menubar.addAction(self._next_image_action)
+        menubar.addSeparator()
+        optionsMenu = menubar.addMenu('Options')
+        optionsMenu.setToolTipsVisible(True)
+        optionsMenu.addAction(self._is_yolo_name)
         menubar.addSeparator()
         menubar.addAction(quit_action)
 
